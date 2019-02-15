@@ -86,6 +86,8 @@ namespace XLPakTool
 
                     if (cmd == "quit")
                         break;
+                    if (cmd == "exit")
+                        break;
 
                     switch (cmd)
                     {
@@ -208,6 +210,9 @@ namespace XLPakTool
                             var tree = new TreeDictionary("/master");
                             GetFileSystemStruct(tree);
                             // TODO ... save to file...
+                            break;
+                        case "exportfilelist":
+                            ExportFileList();
                             break;
                     }
                 }
@@ -412,6 +417,67 @@ namespace XLPakTool
         private static void Log(string level, string message, params object[] args)
         {
             Console.WriteLine($"[{level}] {string.Format(message, args)}");
+        }
+
+        private static void ExportDir(TreeDictionary thisDir, ref List<string> sl)
+        {
+            string thisPath = thisDir.Path + "/";
+
+            var files = GetFiles(thisDir.Path + "/");
+            foreach (var (file, isDirectory) in files)
+            {
+
+                // Trim the "/master/" part of the file = 8 chars, it's always the same anyway
+                string thisFile = file.Remove(0, 8);
+
+                if (isDirectory)
+                {
+                    var folder = new TreeDictionary(file) { Parent = thisDir };
+                    sl.Add(thisFile + ";-1;;;;");
+                    // Console.WriteLine("{0};0;;;;", file);
+                    ExportDir(folder, ref sl);
+                    //thisDir.Directories.Add(folder);
+                }
+                else
+                {
+                    var temp = GetFileState(file);
+                    if (temp != null)
+                    {
+                        //thisDir.Files.Add(temp);
+                        sl.Add(thisFile + ";" +
+                            temp.Size.ToString() + ";" +
+                            temp.Hash + ";" +
+                            temp.CreateTime.ToString("yyyyMMdd-HHmmss") + ";" +
+                            temp.ModifyTime.ToString("yyyyMMdd-HHmmss")
+                            );
+                        //Console.WriteLine("{0};{1};{2};{3};{4};", file,temp.Size,temp.Hash,temp.CreateTime.ToString("yyyyMMdd-HHmmss"),temp.ModifyTime.ToString("yyyyMMdd-HHmmss"));
+                        /*
+                            Log("File", thisPath);
+                            Log("File", $"Size: {temp.Size}");
+                            Log("File", $"CreationTime: {temp.CreateTime}");
+                            Log("File", $"ModifiedTime: {temp.ModifyTime}");
+                            Log("File", $"MD5: {temp.Hash}");
+                        */
+
+                    }
+                }
+            }
+
+        }
+
+        private static void ExportFileList()
+        {
+            Console.WriteLine("--- Init ExportFileList ---");
+            var tree = new TreeDictionary("/master");
+
+            List<string> sl = new List<string>();
+
+            Console.WriteLine("--- Begin ExportFileList ---");
+            ExportDir(tree,ref sl);
+            Console.WriteLine("--- {0} items --- ",sl.Count);
+            File.WriteAllLines("export.csv", sl.ToArray());
+            Console.WriteLine("--- End ExportFileList --- ");
+
         }
     }
 }
