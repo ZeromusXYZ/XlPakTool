@@ -5,81 +5,81 @@ namespace XLPakTool
 {
     public class XLPack
     {
-        [DllImport("xlpack.dll", EntryPoint = "?ApplyPatchPak@@YA_NPBD0@Z", CharSet = CharSet.Ansi,
-            CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#1", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?ApplyPatchPak@@YA_NPBD0@Z",
         public static extern bool ApplyPatchPak([MarshalAs(UnmanagedType.LPStr)] string s1, [MarshalAs(UnmanagedType.LPStr)] string s2);
 
-        [DllImport("xlpack.dll", EntryPoint = "?Copy@@YA_NPBD0@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#3", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?Copy@@YA_NPBD0@Z",
         public static extern bool Copy([MarshalAs(UnmanagedType.LPStr)] string from, [MarshalAs(UnmanagedType.LPStr)] string to);
 
-        [DllImport("xlpack.dll", EntryPoint = "?CopyDir@@YA_NPBD0@Z", CharSet = CharSet.Ansi)]
+        [DllImport("xlpack.dll", EntryPoint = "#4", CharSet = CharSet.Ansi)] // "?CopyDir@@YA_NPBD0@Z"
         public static extern bool CopyDir([MarshalAs(UnmanagedType.LPStr)] string from, [MarshalAs(UnmanagedType.LPStr)] string to);
 
-        [DllImport("xlpack.dll", EntryPoint = "?CreateFileSystem@@YA_NXZ", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#6", CallingConvention = CallingConvention.Cdecl)] // "?CreateFileSystem@@YA_NXZ"
         public static extern bool CreateFileSystem();
 
-        [DllImport("xlpack.dll", EntryPoint = "?DestroyFileLogHandler@@YAXPAX@Z", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#8", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?DeleteDir@@YA_NPBD@Z"
+        public static extern bool DeleteDir([MarshalAs(UnmanagedType.LPStr)] string path);
+
+        [DllImport("xlpack.dll", EntryPoint = "#10", CallingConvention = CallingConvention.Cdecl)] // "?DestroyFileLogHandler@@YAXPAX@Z"
         public static extern void DestroyFileLogHandler(IntPtr lp1);
 
-        [DllImport("xlpack.dll", EntryPoint = "?DestroyFileSystem@@YAXXZ", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#11", CallingConvention = CallingConvention.Cdecl)] // "?DestroyFileSystem@@YAXXZ"
         public static extern void DestroyFileSystem();
 
-        [DllImport("xlpack.dll", EntryPoint = "?FDelete@@YA_NPBD@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#12", CallingConvention = CallingConvention.Cdecl)] // "?FClose@@YAXAAPAUFile@@@Z"
+        public static extern void FClose(ref IntPtr filePosition);
+
+        [DllImport("xlpack.dll", EntryPoint = "#13", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FDelete@@YA_NPBD@Z"
         public static extern bool FDelete([MarshalAs(UnmanagedType.LPStr)] string where);
 
-        [DllImport("xlpack.dll", EntryPoint = "?FindClose@@YAHH@Z", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#16", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FGetStat@@YA_NPAUFile@@PAUpack_stat2@@@Z"
+        public static extern bool FGetMD5(IntPtr filePosition, [MarshalAs(UnmanagedType.LPStr)] ref string md5);
+
+        [DllImport("xlpack.dll", EntryPoint = "#17", CallingConvention = CallingConvention.Cdecl)] // "?FGetStat@@YA_NPAUFile@@PAUpack_stat2@@@Z"
+        public static extern bool FGetStat(IntPtr filePosition, ref pack_stat2 stat);
+
+        [DllImport("xlpack.dll", EntryPoint = "#18", CallingConvention = CallingConvention.Cdecl)] // "?FGetStat@@YA_NPAUFile@@PAUpack_stat_t@@@Z"
+        public static extern bool FGetStat(IntPtr filePosition, ref pack_stat_t stat);
+
+        [DllImport("xlpack.dll", EntryPoint = "#19", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FOpen@@YAPAUFile@@PBD0@Z"
+        public static extern IntPtr FOpen([MarshalAs(UnmanagedType.LPStr)] string path, [MarshalAs(UnmanagedType.LPStr)] string mode);
+
+        [DllImport("xlpack.dll", EntryPoint = "#26", CallingConvention = CallingConvention.Cdecl)] // "?FSize@@YA_JPAUFile@@@Z"
+        public static extern long FSize(IntPtr filePosition);
+
+        [DllImport("xlpack.dll", EntryPoint = "#28", CallingConvention = CallingConvention.Cdecl)] // "?FUseMD5@@YA_NPAUFile@@@Z"
+        public static extern bool FUseMD5(IntPtr filePosition);
+
+        [DllImport("xlpack.dll", EntryPoint = "#30", CallingConvention = CallingConvention.Cdecl)] // "?FindClose@@YAHH@Z"
         public static extern int FindClose(int i);
 
-        [DllImport("xlpack.dll", EntryPoint = "?FindFirst@@YAHPBDPAUafs_finddata@@@Z", CharSet = CharSet.Ansi,
-            CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#31", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FindFirst@@YAHPBDPAUafs_finddata@@@Z"
         public static extern int FindFirst([MarshalAs(UnmanagedType.LPStr)] string file, ref afs_finddata fd);
 
-        [DllImport("xlpack.dll", EntryPoint = "?FindNext@@YAHHPAUafs_finddata@@@Z", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#32", CallingConvention = CallingConvention.Cdecl)] // "?FindNext@@YAHHPAUafs_finddata@@@Z"
         public static extern int FindNext(int i, ref afs_finddata fd);
 
-        [DllImport("xlpack.dll", EntryPoint = "?GetFileName@@YAPBDPBUafs_finddata@@@Z", CharSet = CharSet.Ansi,
-            CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#35", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?GetFileName@@YAPBDPBUafs_finddata@@@Z"
         public static extern IntPtr GetFileName(ref afs_finddata fd);
 
-        [DllImport("xlpack.dll", EntryPoint = "?IsDirectory@@YA_NPBUafs_finddata@@@Z", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#41", CallingConvention = CallingConvention.Cdecl)] // "?IsDirectory@@YA_NPBUafs_finddata@@@Z"
         public static extern bool IsDirectory(ref afs_finddata fd);
 
-        [DllImport("xlpack.dll", EntryPoint = "?IsFileExist@@YA_NPBD@Z", CharSet = CharSet.Ansi,
-            CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#42", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?IsFileExist@@YA_NPBD@Z"
         public static extern bool IsFileExist([MarshalAs(UnmanagedType.LPStr)] string file);
 
-        [DllImport("xlpack.dll", EntryPoint = "?Mount@@YAPAXPBD0_N@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr Mount([MarshalAs(UnmanagedType.LPStr)] string where, [MarshalAs(UnmanagedType.LPStr)] string which,
-            [MarshalAs(UnmanagedType.Bool)] bool editable);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?Unmount@@YA_NPBD@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool Unmount([MarshalAs(UnmanagedType.LPStr)] string where);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?Unmount@@YA_NPAX@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool Unmount(IntPtr handler);
+        [DllImport("xlpack.dll", EntryPoint = "#48", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?Mount@@YAPAXPBD0_N@Z"
+        public static extern IntPtr Mount([MarshalAs(UnmanagedType.LPStr)] string where, [MarshalAs(UnmanagedType.LPStr)] string which, [MarshalAs(UnmanagedType.Bool)] bool editable);
 
-        [DllImport("xlpack.dll", EntryPoint = "?SetFileLogHandler@@YAPAXPBDP6AX0ZZ@Z", CharSet = CharSet.Ansi,
-            CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("xlpack.dll", EntryPoint = "#53", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?SetFileLogHandler@@YAPAXPBDP6AX0ZZ@Z"
         public static extern IntPtr SetFileLogHandler([MarshalAs(UnmanagedType.LPStr)] string s, Func f);
 
-        [DllImport("xlpack.dll", EntryPoint = "?DeleteDir@@YA_NPBD@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool DeleteDir([MarshalAs(UnmanagedType.LPStr)] string path);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?FOpen@@YAPAUFile@@PBD0@Z", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr FOpen([MarshalAs(UnmanagedType.LPStr)] string path, [MarshalAs(UnmanagedType.LPStr)] string mode);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?FClose@@YAXAAPAUFile@@@Z", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void FClose(ref IntPtr filePosition);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?FGetStat@@YA_NPAUFile@@PAUpack_stat_t@@@Z", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool FGetStat(IntPtr filePosition, ref pack_stat_t stat);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?FGetStat@@YA_NPAUFile@@PAUpack_stat2@@@Z", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool FGetStat(IntPtr filePosition, ref pack_stat2 stat);
-        
-        [DllImport("xlpack.dll", EntryPoint = "?FSize@@YA_JPAUFile@@@Z", CallingConvention = CallingConvention.Cdecl)]
-        public static extern long FSize(IntPtr filePosition);
-        
+        [DllImport("xlpack.dll", EntryPoint = "#55", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?Unmount@@YA_NPAX@Z"
+        public static extern bool Unmount(IntPtr handler);
+
+        [DllImport("xlpack.dll", EntryPoint = "#56", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?Unmount@@YA_NPBD@Z"
+        public static extern bool Unmount([MarshalAs(UnmanagedType.LPStr)] string where);
+
         [StructLayout(LayoutKind.Explicit)]
         public struct afs_finddata
         {

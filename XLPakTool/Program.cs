@@ -58,6 +58,8 @@ namespace XLPakTool
 
             var gamePakPath = args[0];
 
+            Console.Title = "XLPakTool - " + gamePakPath;
+
             Log("Info", "Create file system...");
             if (XLPack.CreateFileSystem())
             {
@@ -98,6 +100,7 @@ namespace XLPakTool
                             Log("Help", "rm <path> -> remove path");
                             Log("Help", "fstat <file path> -> Get file stat");
                             Log("Help", "fsize <file path> -> Get file size");
+                            // Log("Help", "fgetmd5 <file path> -> Get file size"); // doesn't work ?
                             Console.WriteLine("--------------------------------");
                             Log("Help", "To export file(s)/dir:");
                             Log("Help", "cp <src> /fs/<dest>");
@@ -193,7 +196,7 @@ namespace XLPakTool
                             else
                             {
                                 path = cmdArgs[0];
-                                var temp = GetFileState(path);
+                                var temp = GetFileStat2(path);
                                 if (temp == null)
                                     Log("Warn", "[File] Doesn't exist or get stat...");
                                 else
@@ -204,6 +207,18 @@ namespace XLPakTool
                                     Log("File", $"ModifiedTime: {temp.ModifyTime}");
                                     Log("File", $"MD5: {temp.Hash}");
                                 }
+                            }
+                            break;
+
+                        case "fstat1":
+                            if (cmdArgs.Length == 0)
+                                Log("Info", "fstat <file path>");
+                            else
+                            {
+                                path = cmdArgs[0];
+                                var temp = GetFileStat(path);
+                                Log("File", $"CreationTime: {DateTime.FromFileTime(temp.creationTime)}");
+                                Log("File", $"ModifiedTime: {DateTime.FromFileTime(temp.modifiedTime)}");
                             }
                             break;
 
@@ -220,6 +235,33 @@ namespace XLPakTool
                                 {
                                     Log("File", $"Size: {temp}");
                                 }
+                            }
+                            break;
+
+                        case "fgetmd5":
+                            if (cmdArgs.Length == 0)
+                                Log("Info", "fgetmd5 <file path>");
+                            else
+                            {
+                                path = cmdArgs[0];
+                                var temp = GetFileMD5(path);
+                                if (temp == null)
+                                    Log("Warn", "[File] Doesn't exist ...");
+                                else
+                                {
+                                    Log("File", $"MD5: {temp}");
+                                }
+                            }
+                            break;
+
+                        case "fusemd5":
+                            if (cmdArgs.Length == 0)
+                                Log("Info", "fusemd5 <file path>");
+                            else
+                            {
+                                path = cmdArgs[0];
+                                var temp = UseMD5(path);
+                                Log("File", $"UseMD5: {temp}");
                             }
                             break;
 
@@ -318,7 +360,7 @@ namespace XLPakTool
             XLPack.Unmount(_fsHandler);
         }
 
-        private static TreeDictionary.XlFile GetFileState(string path)
+        private static TreeDictionary.XlFile GetFileStat2(string path)
         {
             if (!XLPack.IsFileExist(path))
                 return null;
@@ -328,6 +370,18 @@ namespace XLPakTool
             XLPack.FClose(ref position);
             return res ? new TreeDictionary.XlFile(path, stat2) : null;
         }
+
+        private static XLPack.pack_stat_t GetFileStat(string path)
+        {
+            var stat = new XLPack.pack_stat_t();
+            if (!XLPack.IsFileExist(path))
+                return stat;
+            var position = XLPack.FOpen(path, "r");
+            var res = XLPack.FGetStat(position, ref stat);
+            XLPack.FClose(ref position);
+            return stat;
+        }
+
 
 
         private static long GetFileSize(string path)
@@ -339,6 +393,28 @@ namespace XLPakTool
             s = XLPack.FSize(position);
             XLPack.FClose(ref position);
             return s ;
+        }
+
+        private static string GetFileMD5(string path)
+        {
+            if (!XLPack.IsFileExist(path))
+                return null;
+            string s = "";
+            s = s.PadRight(32,'x');
+            var position = XLPack.FOpen(path, "r");
+            var res = XLPack.FGetMD5(position,ref s);
+            XLPack.FClose(ref position);
+            return res ? s : null;
+        }
+
+        private static bool UseMD5(string path)
+        {
+            if (!XLPack.IsFileExist(path))
+                return false;
+            var position = XLPack.FOpen(path, "r");
+            var res = XLPack.FUseMD5(position);
+            XLPack.FClose(ref position);
+            return res ;
         }
 
         private static TreeDictionary GetFileSystemStruct(TreeDictionary master)
@@ -354,7 +430,7 @@ namespace XLPakTool
                 }
                 else
                 {
-                    var temp = GetFileState(file);
+                    var temp = GetFileStat2(file);
                     if (temp != null)
                         master.Files.Add(temp);
                 }
@@ -469,7 +545,7 @@ namespace XLPakTool
                 }
                 else
                 {
-                    var temp = GetFileState(file);
+                    var temp = GetFileStat2(file);
                     if (temp != null)
                     {
                         //thisDir.Files.Add(temp);
