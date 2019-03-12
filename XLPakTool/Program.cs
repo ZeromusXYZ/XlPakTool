@@ -97,6 +97,7 @@ namespace XLPakTool
                             Log("Help", "cp <scr> <dest> -> copy file from src to dest");
                             Log("Help", "rm <path> -> remove path");
                             Log("Help", "fstat <file path> -> Get file stat");
+                            Log("Help", "fsize <file path> -> Get file size");
                             Console.WriteLine("--------------------------------");
                             Log("Help", "To export file(s)/dir:");
                             Log("Help", "cp <src> /fs/<dest>");
@@ -204,8 +205,24 @@ namespace XLPakTool
                                     Log("File", $"MD5: {temp.Hash}");
                                 }
                             }
-
                             break;
+
+                        case "fsize":
+                            if (cmdArgs.Length == 0)
+                                Log("Info", "fsize <file path>");
+                            else
+                            {
+                                path = cmdArgs[0];
+                                var temp = GetFileSize(path);
+                                if (temp < 0)
+                                    Log("Warn", "[File] Doesn't exist ...");
+                                else
+                                {
+                                    Log("File", $"Size: {temp}");
+                                }
+                            }
+                            break;
+
                         case "struct":
                             var tree = new TreeDictionary("/master");
                             GetFileSystemStruct(tree);
@@ -306,10 +323,22 @@ namespace XLPakTool
             if (!XLPack.IsFileExist(path))
                 return null;
             var position = XLPack.FOpen(path, "r");
-            var stat = new XLPack.pack_stat2();
-            var res = XLPack.FGetStat(position, ref stat);
+            var stat2 = new XLPack.pack_stat2();
+            var res = XLPack.FGetStat(position, ref stat2);
             XLPack.FClose(ref position);
-            return res ? new TreeDictionary.XlFile(path, stat) : null;
+            return res ? new TreeDictionary.XlFile(path, stat2) : null;
+        }
+
+
+        private static long GetFileSize(string path)
+        {
+            if (!XLPack.IsFileExist(path))
+                return -1 ;
+            long s = 0;
+            var position = XLPack.FOpen(path, "r");
+            s = XLPack.FSize(position);
+            XLPack.FClose(ref position);
+            return s ;
         }
 
         private static TreeDictionary GetFileSystemStruct(TreeDictionary master)
