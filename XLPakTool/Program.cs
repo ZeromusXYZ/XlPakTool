@@ -256,6 +256,22 @@ namespace XLPakTool
                             }
                             break;
 
+                        case "fsetmd5":
+                            if (cmdArgs.Length < 2)
+                                Log("Info", "fsetmd5 <md5hash> <file path>");
+                            else
+                            {
+                                var hash = cmdArgs[0];
+                                path = cmdArgs[1];
+                                if (!SetFileMD5(path, hash))
+                                    Log("Warn", "[File] Doesn't exist ...");
+                                else
+                                {
+                                    Log("File", $"File MD5 updated to {hash}");
+                                }
+                            }
+                            break;
+
                         case "fusemd5":
                             if (cmdArgs.Length == 0)
                                 Log("Info", "fusemd5 <file path>");
@@ -404,6 +420,20 @@ namespace XLPakTool
             var res = XLPack.FGetMD5(position,ref md5info);
             XLPack.FClose(ref position);
             return res ? BitConverter.ToString(md5info.md5).Replace("-", "").ToLower() : "";
+        }
+
+        private static bool SetFileMD5(string path, string hash)
+        {
+            if (!XLPack.IsFileExist(path))
+                return false;
+
+            XLPack.afs_md5_ctx md5info = new XLPack.afs_md5_ctx();
+            md5info.md5 = StringToByteArray(hash);
+            var position = XLPack.FOpen(path, "r");
+            // fsetmd5 00001111222233334444555566667777 /master/bin32/zlib1.dll
+            var res = XLPack.FSetMD5(position, ref md5info);
+            XLPack.FClose(ref position);
+            return res ;
         }
 
         private static bool UseMD5(string path)
@@ -582,6 +612,15 @@ namespace XLPakTool
             File.WriteAllLines("export.csv", sl.ToArray());
             Console.WriteLine("--- End ExportFileList --- ");
 
+        }
+
+        public static byte[] StringToByteArray(String hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
         }
     }
 }

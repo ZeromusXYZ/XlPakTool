@@ -44,6 +44,12 @@ namespace XLPakTool
         [DllImport("xlpack.dll", EntryPoint = "#19", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FOpen@@YAPAUFile@@PBD0@Z"
         public static extern IntPtr FOpen([MarshalAs(UnmanagedType.LPStr)] string path, [MarshalAs(UnmanagedType.LPStr)] string mode);
 
+        [DllImport("xlpack.dll", EntryPoint = "#21", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FReadAll@@YA_JPAUFile@@PAPADAA_J@Z"
+        public static extern int FReadAll(IntPtr filePosition, IntPtr buffer, Int64 size);
+
+        [DllImport("xlpack.dll", EntryPoint = "#24", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FSetMD5@@YA_NPAUFile@@QBD@Z"
+        public static extern bool FSetMD5(IntPtr filePosition, ref afs_md5_ctx md5);
+
         [DllImport("xlpack.dll", EntryPoint = "#26", CallingConvention = CallingConvention.Cdecl)] // "?FSize@@YA_JPAUFile@@@Z"
         public static extern long FSize(IntPtr filePosition);
 
