@@ -33,7 +33,7 @@ namespace XLPakTool
         public static extern bool FDelete([MarshalAs(UnmanagedType.LPStr)] string where);
 
         [DllImport("xlpack.dll", EntryPoint = "#16", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)] // "?FGetStat@@YA_NPAUFile@@PAUpack_stat2@@@Z"
-        public static extern bool FGetMD5(IntPtr filePosition, [MarshalAs(UnmanagedType.LPStr)] ref string md5);
+        public static extern bool FGetMD5(IntPtr filePosition, ref afs_md5_ctx md5);
 
         [DllImport("xlpack.dll", EntryPoint = "#17", CallingConvention = CallingConvention.Cdecl)] // "?FGetStat@@YA_NPAUFile@@PAUpack_stat2@@@Z"
         public static extern bool FGetStat(IntPtr filePosition, ref pack_stat2 stat);

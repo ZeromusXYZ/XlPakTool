@@ -98,8 +98,10 @@ namespace XLPakTool
                             Log("Help", "ls <path?> -> get files");
                             Log("Help", "cp <scr> <dest> -> copy file from src to dest");
                             Log("Help", "rm <path> -> remove path");
-                            Log("Help", "fstat <file path> -> Get file stat");
+                            Log("Help", "fstat <file path> -> Get file stat (might not work on some files)");
                             Log("Help", "fsize <file path> -> Get file size");
+                            Log("Help", "fgetmd5 <file path> -> Get file md5 as string");
+                            Log("Help", "fstat1 <file path> -> Get file timestamps");
                             // Log("Help", "fgetmd5 <file path> -> Get file size"); // doesn't work ?
                             Console.WriteLine("--------------------------------");
                             Log("Help", "To export file(s)/dir:");
@@ -382,8 +384,6 @@ namespace XLPakTool
             return stat;
         }
 
-
-
         private static long GetFileSize(string path)
         {
             if (!XLPack.IsFileExist(path))
@@ -398,13 +398,12 @@ namespace XLPakTool
         private static string GetFileMD5(string path)
         {
             if (!XLPack.IsFileExist(path))
-                return null;
-            string s = "";
-            s = s.PadRight(32,'x');
+                return "";
             var position = XLPack.FOpen(path, "r");
-            var res = XLPack.FGetMD5(position,ref s);
+            XLPack.afs_md5_ctx md5info = new XLPack.afs_md5_ctx();
+            var res = XLPack.FGetMD5(position,ref md5info);
             XLPack.FClose(ref position);
-            return res ? s : null;
+            return res ? BitConverter.ToString(md5info.md5).Replace("-", "").ToLower() : "";
         }
 
         private static bool UseMD5(string path)
