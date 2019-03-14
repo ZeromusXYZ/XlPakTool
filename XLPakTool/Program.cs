@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Security.Cryptography;
+using System.Text;
+using ChunkedMemStream;
 
 namespace XLPakTool
 {
@@ -95,14 +98,15 @@ namespace XLPakTool
                     {
                         case "help":
                             Log("Help", "cd <path> -> move at folders");
-                            Log("Help", "ls <path?> -> get files");
+                            Log("Help", "ls [path] -> get files");
                             Log("Help", "cp <scr> <dest> -> copy file from src to dest");
                             Log("Help", "rm <path> -> remove path");
-                            Log("Help", "fstat <file path> -> Get file stat (might not work on some files)");
+                            Log("Help", "fstat <file path> -> Get file stat (doesn't work if one of the fields is missing information)");
                             Log("Help", "fsize <file path> -> Get file size");
                             Log("Help", "fgetmd5 <file path> -> Get file md5 as string");
                             Log("Help", "fstat1 <file path> -> Get file timestamps");
-                            // Log("Help", "fgetmd5 <file path> -> Get file size"); // doesn't work ?
+                            Log("Help", "makemd5 <file path> -> Re-calculate and Set the MD5 of a file");
+                            Log("Help", "fsetmd5 <hash> <file path> -> Manually enter a value for a file's md5 field");
                             Console.WriteLine("--------------------------------");
                             Log("Help", "To export file(s)/dir:");
                             Log("Help", "cp <src> /fs/<dest>");
@@ -272,17 +276,17 @@ namespace XLPakTool
                             }
                             break;
 
-                        case "recalculatemd5":
-                            if (cmdArgs.Length < 2)
-                                Log("Info", "recalculate <file path>");
+                        case "makemd5":
+                            if (cmdArgs.Length == 0)
+                                Log("Info", "makemd5 <file path>");
                             else
                             {
                                 path = cmdArgs[0];
                                 if (!ReCalculateFileMD5(path))
-                                    Log("Warn", "[File] Doesn't exist ...");
+                                    Log("Warn", "[File] Doesn't exist or failed to update ...");
                                 else
                                 {
-                                    Log("File", $"File MD5 updated to {hash}");
+                                    Log("File", $"File MD5 updated");
                                 }
                             }
                             break;
@@ -456,15 +460,16 @@ namespace XLPakTool
             if (!XLPack.IsFileExist(path))
                 return false;
 
-            XLPack.afs_md5_ctx md5info = new XLPack.afs_md5_ctx();
-            //md5info.md5 = StringToByteArray(hash);
             var position = XLPack.FOpen(path, "r");
-            // FIXME: make this actually use a long to support files > 2GB
             long fileSize = XLPack.FSize(position);
             const int bufSize = 0x4000 ;
-            var buf = Marshal.AllocHGlobal(bufSize);
+            byte[] buffer = new byte[bufSize];
+            IntPtr bufPtr = Marshal.UnsafeAddrOfPinnedArrayElement(buffer, 0);
+            // TODO: Do this without reading the entire file into memory to calculate the MD5
+            //       Maybe try to use the XLPack.DLL's MD5Init, MD5Update and MD5 Finalize functions ?
+            // Using ChunkedMemoryStream instead of MemoryStream to hopefully avoid outofmemory errors on large files
+            ChunkedMemoryStream ms = new ChunkedMemoryStream(); 
             long readTotalSize = 0;
-            MemoryStream ms = new MemoryStream();
             while (readTotalSize < fileSize)
             {
                 long readSize = fileSize - readTotalSize;
@@ -472,17 +477,17 @@ namespace XLPakTool
                 {
                     readSize = bufSize;
                 }
-                XLPack.FRead(position, buf, readSize);
-                ms.Write(buf, 0, readSize);
+                XLPack.FRead(position, bufPtr, readSize);
+                ms.Write(buffer, 0, (int)readSize); // readSize should never be out of int range, so it's safe to cast it
                 readTotalSize += readSize;
             }
-
-            Marshal.FreeHGlobal(buf);
-            ms.Dispose();
-            // fsetmd5 00001111222233334444555566667777 /master/bin32/zlib1.dll
-            // var res = XLPack.FSetMD5(position, ref md5info);
             XLPack.FClose(ref position);
-            return true;
+            ms.Position = 0 ;
+            MD5 md5Hash = MD5.Create();
+            string md5String = GetMd5Hash(md5Hash, ms).Replace("-","").ToLower();
+            ms.Dispose();
+            var res = SetFileMD5(path, md5String);
+            return res ;
         }
 
         private static bool UseMD5(string path)
@@ -670,6 +675,46 @@ namespace XLPakTool
             for (int i = 0; i < NumberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
+        }
+
+        static string GetMd5Hash(MD5 md5Hash, Stream input)
+        {
+
+            // Convert the input string to a byte array and compute the hash.
+            byte[] data = md5Hash.ComputeHash(input);
+
+            // Create a new Stringbuilder to collect the bytes
+            // and create a string.
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data 
+            // and format each one as a hexadecimal string.
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
+        }
+
+        // Verify a hash against a string.
+        static bool VerifyMd5Hash(MD5 md5Hash, Stream input, string hash)
+        {
+            // Hash the input.
+            string hashOfInput = GetMd5Hash(md5Hash, input);
+
+            // Create a StringComparer an compare the hashes.
+            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+
+            if (0 == comparer.Compare(hashOfInput, hash))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
