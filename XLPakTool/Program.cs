@@ -272,6 +272,21 @@ namespace XLPakTool
                             }
                             break;
 
+                        case "recalculatemd5":
+                            if (cmdArgs.Length < 2)
+                                Log("Info", "recalculate <file path>");
+                            else
+                            {
+                                path = cmdArgs[0];
+                                if (!ReCalculateFileMD5(path))
+                                    Log("Warn", "[File] Doesn't exist ...");
+                                else
+                                {
+                                    Log("File", $"File MD5 updated to {hash}");
+                                }
+                            }
+                            break;
+
                         case "fusemd5":
                             if (cmdArgs.Length == 0)
                                 Log("Info", "fusemd5 <file path>");
@@ -434,6 +449,40 @@ namespace XLPakTool
             var res = XLPack.FSetMD5(position, ref md5info);
             XLPack.FClose(ref position);
             return res ;
+        }
+
+        private static bool ReCalculateFileMD5(string path)
+        {
+            if (!XLPack.IsFileExist(path))
+                return false;
+
+            XLPack.afs_md5_ctx md5info = new XLPack.afs_md5_ctx();
+            //md5info.md5 = StringToByteArray(hash);
+            var position = XLPack.FOpen(path, "r");
+            // FIXME: make this actually use a long to support files > 2GB
+            long fileSize = XLPack.FSize(position);
+            const int bufSize = 0x4000 ;
+            var buf = Marshal.AllocHGlobal(bufSize);
+            long readTotalSize = 0;
+            MemoryStream ms = new MemoryStream();
+            while (readTotalSize < fileSize)
+            {
+                long readSize = fileSize - readTotalSize;
+                if (readSize > bufSize)
+                {
+                    readSize = bufSize;
+                }
+                XLPack.FRead(position, buf, readSize);
+                ms.Write(buf, 0, readSize);
+                readTotalSize += readSize;
+            }
+
+            Marshal.FreeHGlobal(buf);
+            ms.Dispose();
+            // fsetmd5 00001111222233334444555566667777 /master/bin32/zlib1.dll
+            // var res = XLPack.FSetMD5(position, ref md5info);
+            XLPack.FClose(ref position);
+            return true;
         }
 
         private static bool UseMD5(string path)
